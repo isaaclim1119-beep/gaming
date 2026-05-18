@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>📈 韭菜保卫战：极简K线生存游戏 📈</title>
+<title>📈 韭菜保卫战 2.0：双向多空对决 📈</title>
 <style>
 * { box-sizing: border-box; }
 body {
@@ -43,17 +43,20 @@ body {
     background: #090514;
     border: 1px solid #251b45;
     border-radius: 10px;
-    padding: 10px;
+    padding: 8px;
     text-align: center;
 }
 .stat-box.full-width {
     grid-column: span 2;
-    border-color: #10b981;
+    border-color: #f59e0b;
+    background: linear-gradient(180deg, #170f35 0%, #090514 100%);
 }
 .lbl { font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
-.val { font-size: 20px; font-weight: bold; font-family: monospace; margin-top: 4px; }
-#net-worth { color: #f59e0b; font-size: 24px; text-shadow: 0 0 10px rgba(245,158,11,0.4); }
+.val { font-size: 18px; font-weight: bold; font-family: monospace; margin-top: 4px; }
+#net-worth { color: #f59e0b; font-size: 26px; text-shadow: 0 0 10px rgba(245,158,11,0.5); }
+#target-worth { color: #60a5fa; font-size: 12px; margin-top: 2px; }
 #position-status { color: #94a3b8; }
+#floating-pnl { font-size: 14px; font-weight: bold; }
 
 /* 📉 K线画布容器 */
 .chart-container {
@@ -61,7 +64,7 @@ body {
     background: #020005;
     border: 2px solid #1e1b4b;
     border-radius: 12px;
-    height: 240px;
+    height: 230px;
     width: 100%;
     overflow: hidden;
     margin-bottom: 15px;
@@ -75,7 +78,7 @@ canvas {
 .price-tag {
     position: absolute;
     right: 5px;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.8);
     padding: 2px 6px;
     border-radius: 4px;
     font-family: monospace;
@@ -86,47 +89,37 @@ canvas {
 }
 #current-price-tag { color: #ffffff; }
 
-/* 🕹️ 核心操控按钮 */
-.controls {
+/* 🕹️ 核心多空操作面板 */
+.controls-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    gap: 12px;
 }
 .btn {
-    padding: 15px;
-    font-size: 18px;
+    padding: 14px;
+    font-size: 16px;
     font-weight: 900;
     border: 2px solid #fff;
     border-radius: 14px;
     cursor: pointer;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     transition: transform 0.05s, opacity 0.2s;
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 .btn:active { transform: scale(0.95); }
-.btn:disabled { opacity: 0.2; cursor: not-allowed; transform: none; }
+.btn:disabled { opacity: 0.15; cursor: not-allowed; transform: none; }
 
-.btn-buy {
-    background: linear-gradient(180deg, #10b981 0%, #059669 100%);
-    color: #fff;
-    border-color: #a7f3d0;
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-}
-.btn-sell {
-    background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
-    color: #fff;
-    border-color: #fca5a5;
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
-}
+.btn-buy { background: linear-gradient(180deg, #10b981 0%, #059669 100%); color: #fff; border-color: #a7f3d0; }
+.btn-short { background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%); color: #fff; border-color: #fca5a5; }
+.btn-close { background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%); color: #fff; border-color: #93c5fd; grid-column: span 2; }
 
-/* ⚡ 浮动提示特效 */
+/* ⚡ 浮动提示 */
 .floating-tip {
     position: absolute;
-    left: 50%;
-    top: 40%;
+    left: 50%; top: 45%;
     transform: translate(-50%, -50%) scale(0);
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.95);
     padding: 15px 25px;
     border-radius: 12px;
     text-align: center;
@@ -140,11 +133,10 @@ canvas {
 .floating-tip h3 { margin: 0 0 5px 0; font-size: 22px; }
 .floating-tip p { margin: 0; font-size: 16px; font-family: monospace; }
 
-/* 💥 爆仓/游戏结束全屏遮罩 */
+/* 💥 全屏结局遮罩 */
 .overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(22, 0, 0, 0.95);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -153,19 +145,25 @@ canvas {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.5s ease;
+    padding: 20px;
+    text-align: center;
 }
 .overlay.active { opacity: 1; pointer-events: auto; }
-.overlay h1 { color: #ef4444; font-size: 40px; margin-bottom: 10px; text-shadow: 0 0 20px #ef4444; text-align: center; }
-.overlay p { font-size: 18px; color: #94a3b8; margin-bottom: 25px; text-align: center; padding: 0 20px; }
+.overlay.fail { background: rgba(22, 0, 0, 0.96); }
+.overlay.win { background: rgba(10, 25, 10, 0.96); border: 4px solid #f59e0b; }
+
+.overlay h1 { font-size: 38px; margin-bottom: 10px; text-shadow: 0 0 20px currentColor; }
+.fail h1 { color: #ef4444; }
+.win h1 { color: #f59e0b; }
+.overlay p { font-size: 16px; color: #94a3b8; margin-bottom: 25px; }
 .restart-btn {
     background: #fff; color: #000; border: none; padding: 12px 30px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer;
 }
 
-/* 碎屏动态视觉震动效果 */
 @keyframes shake {
     0%, 100% { transform: translate(0, 0); }
-    20%, 60% { transform: translate(-5px, 5px); }
-    40%, 80% { transform: translate(5px, -5px); }
+    20%, 60% { transform: translate(-4px, 4px); }
+    40%, 80% { transform: translate(4px, -4px); }
 }
 .shake { animation: shake 0.4s ease-in-out; }
 </style>
@@ -177,105 +175,110 @@ canvas {
         <div class="stat-box full-width">
             <div class="lbl">Net Worth (总资产)</div>
             <div class="val" id="net-worth">RM 5,000.00</div>
+            <div id="target-worth">通关目标: RM 100,000,000.00 (1亿自由)</div>
         </div>
         <div class="stat-box">
             <div class="lbl">Position (当前持仓)</div>
             <div class="val" id="position-status">空仓 (CASH)</div>
+            <div id="floating-pnl">--</div>
         </div>
         <div class="stat-box">
-            <div class="lbl">Avg Cost (持仓均价)</div>
+            <div class="lbl">Entry Price (开仓均价)</div>
             <div class="val" id="avg-cost">--</div>
+            <div class="lbl" style="margin-top:4px;">Size (数量): <span id="holding-size">0</span></div>
         </div>
     </div>
 
-    <!-- 图表主盘 -->
+    <!-- 盘面画布 -->
     <div class="chart-container">
         <div class="price-tag" id="current-price-tag" style="top: 50%;">RM 10.00</div>
         <canvas id="klineCanvas"></canvas>
     </div>
 
-    <!-- 控制端 -->
-    <div class="controls">
-        <button class="btn btn-buy" id="buyBtn" onclick="actionBuy()">🟢 买入 (BUY)</button>
-        <button class="btn btn-sell" id="sellBtn" onclick="actionSell()" disabled>🔴 卖出 (SELL)</button>
+    <!-- 双向操控面板 -->
+    <div class="controls-grid">
+        <button class="btn btn-buy" id="buyBtn" onclick="actionOpenLong()">🟢 做多 (LONG)</button>
+        <button class="btn btn-short" id="shortBtn" onclick="actionOpenShort()">🔴 做空 (SHORT)</button>
+        <button class="btn btn-close" id="closeBtn" onclick="actionClosePosition()" disabled>🔵 平仓现价结算 (CLOSE)</button>
     </div>
 
-    <!-- 弹窗特效 -->
+    <!-- 弹窗 -->
     <div class="floating-tip" id="toastBox">
         <h3 id="toastTitle">🚀 抄底成功</h3>
         <p id="toastDesc">RM +0.00</p>
     </div>
 
-    <!-- 爆仓遮罩 -->
-    <div class="overlay" id="gameOverOverlay">
-        <h1>💥 💥 爆仓了 💥 💥</h1>
-        <p id="gameOverReason">天台风大，先撤为妙！您的净资产已归零。</p>
-        <button class="restart-btn" onclick="restartGame()">不服！再来一盘</button>
+    <!-- 结局遮罩 -->
+    <div class="overlay fail" id="gameOverOverlay">
+        <h1 id="failTitle">💥 爆仓了 💥</h1>
+        <p id="gameOverReason">保证金不足，多头/空头强平，资金归零！</p>
+        <button class="restart-btn" onclick="restartGame()">不服重来</button>
+    </div>
+
+    <div class="overlay win" id="gameWinOverlay">
+        <h1>🏆 财务自由！🏆</h1>
+        <p>恭喜！你成功通过高频双向对冲交易，赚够了1个亿！庄家已经被你完全收割，天台现在属于他们！</p>
+        <button class="restart-btn" style="background:#f59e0b; color:#000;" onclick="restartGame()">傲视群雄 再来一局</button>
     </div>
 </div>
 
 <script>
-// --- 🎵 极简音频引擎 ---
+// --- 🎵 电子合成音效 ---
 const Sound = {
     ctx: null,
     init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
-    playBuy() {
+    playTrade() {
         this.init(); let osc = this.ctx.createOscillator(), g = this.ctx.createGain();
         osc.connect(g); g.connect(this.ctx.destination); osc.type = 'sine';
-        osc.frequency.setValueAtTime(523.25, this.ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.15);
-        g.gain.setValueAtTime(0.15, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
-        osc.start(); osc.stop(this.ctx.currentTime + 0.15);
+        osc.frequency.setValueAtTime(587.33, this.ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(987.77, this.ctx.currentTime + 0.12);
+        g.gain.setValueAtTime(0.12, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.12);
     },
-    playSell(isWin) {
+    playClose(isWin) {
         this.init(); let osc = this.ctx.createOscillator(), g = this.ctx.createGain();
         osc.connect(g); g.connect(this.ctx.destination); osc.type = 'sine';
-        osc.frequency.setValueAtTime(isWin ? 783.99 : 392.00, this.ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(isWin ? 1174.66 : 220, this.ctx.currentTime + 0.2);
-        g.gain.setValueAtTime(0.15, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
-        osc.start(); osc.stop(this.ctx.currentTime + 0.2);
+        osc.frequency.setValueAtTime(isWin ? 880 : 330, this.ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(isWin ? 1318.51 : 165, this.ctx.currentTime + 0.25);
+        g.gain.setValueAtTime(0.15, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.25);
     },
     playBoom() {
         this.init(); let osc = this.ctx.createOscillator(), g = this.ctx.createGain();
         osc.connect(g); g.connect(this.ctx.destination); osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(100, this.ctx.currentTime); osc.frequency.linearRampToValueAtTime(30, this.ctx.currentTime + 0.6);
-        g.gain.setValueAtTime(0.4, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.6);
-        osc.start(); osc.stop(this.ctx.currentTime + 0.6);
+        osc.frequency.setValueAtTime(120, this.ctx.currentTime); osc.frequency.linearRampToValueAtTime(20, this.ctx.currentTime + 0.7);
+        g.gain.setValueAtTime(0.35, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.7);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.7);
     }
 };
 
-// 💰 0.05 强行舍入规范算法
-function round05(val) {
-    return Math.round(val / 0.05) * 0.05;
-}
+function round05(val) { return Math.round(val / 0.05) * 0.05; }
 
-// 🎮 游戏核心状态变量
+// 🎮 核心交易参数配置
 let cash = 5000.00;
-let holdings = 0;       // 持股数量
-let avgCost = 0;        // 持仓均价
+let positionType = 'NONE'; // 'NONE', 'LONG', 'SHORT'
+let holdings = 0;          // 手中头寸数量
+let entryPrice = 0;        // 开仓成本价
 let currentPrice = 10.00;
 let isGameOver = false;
 
-// 📊 K线物理画板参数
+const TARGET_WIN = 100000000.00; // 一亿小目标通关！
+
+// 📊 画布配置
 const canvas = document.getElementById("klineCanvas");
 const ctx = canvas.getContext("2d");
-let pricesHistory = []; // 存储历史收盘价
-const maxDataPoints = 45; // 屏幕最多能容纳的K线数量
+let pricesHistory = [];
+const maxDataPoints = 45;
 
-// 市场趋势控制状态机
 let trendDuration = 0;
-let currentTrendType = 'sideways'; // sideways(震荡), bull(狂牛), bear(单边熊)
-
-// 用于判断完胜操作的辅助变量
+let currentTrendType = 'sideways';
 let localMinPrice = 10.00;
 let localMaxPrice = 10.00;
 
 function initChart() {
-    // 适配高分屏缩放
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * window.devicePixelRatio;
     canvas.height = rect.height * window.devicePixelRatio;
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
     
-    // 初始化预填一部分历史震荡数据
     for(let i=0; i < maxDataPoints; i++) {
         currentPrice = round05(currentPrice + (Math.random() - 0.5) * 0.4);
         if(currentPrice < 1.00) currentPrice = 1.00;
@@ -285,70 +288,80 @@ function initChart() {
     localMaxPrice = currentPrice;
 }
 
-// 🔄 游戏物理主循环：每250毫秒刷新一次价格
 function gameTick() {
     if (isGameOver) return;
 
-    // 1. 动态变换市场趋势
+    // 趋势随机动力引擎
     if (trendDuration <= 0) {
         let r = Math.random();
-        trendDuration = Math.floor(Math.random() * 15) + 8; // 趋势持续 8~23 步
-        if (r < 0.5) currentTrendType = 'sideways';
-        else if (r < 0.8) currentTrendType = 'bull';
+        trendDuration = Math.floor(Math.random() * 12) + 6;
+        if (r < 0.4) currentTrendType = 'sideways';
+        else if (r < 0.7) currentTrendType = 'bull';
         else currentTrendType = 'bear';
     }
     trendDuration--;
 
-    // 2. 根据趋势类型产生步进变动
     let change = 0;
-    if (currentTrendType === 'bull') {
-        change = (Math.random() - 0.25) * 0.6; // 偏向上涨
-    } else if (currentTrendType === 'bear') {
-        change = (Math.random() - 0.75) * 0.6; // 偏向下跌
-    } else {
-        change = (Math.random() - 0.5) * 0.4;  // 常规随机震荡
-    }
+    if (currentTrendType === 'bull') change = (Math.random() - 0.22) * 0.7;
+    else if (currentTrendType === 'bear') change = (Math.random() - 0.78) * 0.7;
+    else change = (Math.random() - 0.5) * 0.45;
 
     currentPrice = round05(currentPrice + change);
-    if (currentPrice < 0.20) currentPrice = 0.20; // 绝不退市归零，保留尊严底线
+    if (currentPrice < 0.10) currentPrice = 0.10; // 保留最低残值
 
-    // 维护波段最值以便检测操作级别
     if(currentPrice < localMinPrice) localMinPrice = currentPrice;
     if(currentPrice > localMaxPrice) localMaxPrice = currentPrice;
 
     pricesHistory.push(currentPrice);
-    if (pricesHistory.length > maxDataPoints) {
-        pricesHistory.shift();
-    }
+    if (pricesHistory.length > maxDataPoints) pricesHistory.shift();
 
-    // 3. 计算并更新全盘数值
     renderGame();
 }
 
 function renderGame() {
-    // 计算实时净资产
-    let currentHoldingValue = holdings * currentPrice;
-    let netWorth = round05(cash + currentHoldingValue);
+    // 计算实时多空方向的盈亏
+    let floatingPnl = 0;
+    if (positionType === 'LONG') {
+        floatingPnl = (currentPrice - entryPrice) * holdings;
+    } else if (positionType === 'SHORT') {
+        floatingPnl = (entryPrice - currentPrice) * holdings;
+    }
+
+    let netWorth = round05(cash + (positionType !== 'NONE' ? (entryPrice * holdings + floatingPnl) : 0));
+    if (positionType === 'NONE') netWorth = cash;
 
     document.getElementById("net-worth").innerText = "RM " + netWorth.toFixed(2);
-    
-    if (holdings > 0) {
-        document.getElementById("position-status").style.color = (currentPrice >= avgCost) ? "#10b981" : "#ef4444";
-        document.getElementById("position-status").innerText = `满仓 (${holdings} 股)`;
-        document.getElementById("avg-cost").innerText = "RM " + avgCost.toFixed(2);
+    document.getElementById("holding-size").innerText = holdings;
+
+    // 状态机面板UI动态刷新
+    const pnlEl = document.getElementById("floating-pnl");
+    if (positionType !== 'NONE') {
+        let pnlPercent = (floatingPnl / (entryPrice * holdings)) * 100;
+        pnlEl.innerText = `${floatingPnl >= 0 ? '+' : ''}${floatingPnl.toFixed(2)} (${pnlPercent.toFixed(2)}%)`;
+        pnlEl.style.color = floatingPnl >= 0 ? "#10b981" : "#ef4444";
+        
+        document.getElementById("position-status").innerText = positionType === 'LONG' ? "多单持仓 (LONG)" : "空单持仓 (SHORT)";
+        document.getElementById("position-status").style.color = positionType === 'LONG' ? "#10b981" : "#ef4444";
+        document.getElementById("avg-cost").innerText = "RM " + entryPrice.toFixed(2);
     } else {
-        document.getElementById("position-status").style.color = "#94a3b8";
         document.getElementById("position-status").innerText = "空仓 (CASH)";
+        document.getElementById("position-status").style.color = "#94a3b8";
+        pnlEl.innerText = "--"; pnlEl.style.color = "#fff";
         document.getElementById("avg-cost").innerText = "--";
     }
 
-    // 4. 实时爆仓判定
-    if (netWorth <= 0.05 && holdings > 0) {
-        triggerGameOver();
+    // 💥 判定爆仓或强平
+    if (netWorth <= 0.05 && positionType !== 'NONE') {
+        triggerGameOver(positionType === 'LONG' ? '多头多单遭血洗爆仓！' : '空头遭大庄拉盘逼空爆仓（Short Squeeze）！');
         return;
     }
 
-    // 5. 重绘K线走势图表
+    // 🏆 判定大结局通关：达成1亿自由
+    if (netWorth >= TARGET_WIN) {
+        triggerGameWin();
+        return;
+    }
+
     drawChart();
 }
 
@@ -357,7 +370,6 @@ function drawChart() {
     const h = canvas.height / window.devicePixelRatio;
     ctx.clearRect(0, 0, w, h);
 
-    // 寻找当前可见序列的最大最小值，用于纵向按比例自适应渲染
     let minP = Math.min(...pricesHistory);
     let maxP = Math.max(...pricesHistory);
     if(maxP === minP) { maxP += 1; minP -= 1; }
@@ -367,87 +379,102 @@ function drawChart() {
     const getX = (index) => (index * (w / (maxDataPoints - 1)));
     const getY = (val) => h - ((val - minP) / (maxP - minP) * h);
 
-    // 更新右侧当前浮动价格条的横向对齐位置
-    const tagEl = document.getElementById("current-price-tag");
-    let lastY = getY(currentPrice);
-    tagEl.style.top = `${lastY + 15}px`;
-    tagEl.innerText = "RM " + currentPrice.toFixed(2);
+    document.getElementById("current-price-tag").style.top = `${getY(currentPrice) + 15}px`;
+    document.getElementById("current-price-tag").innerText = "RM " + currentPrice.toFixed(2);
 
-    // 绘制浅色背景辅助网格线
-    ctx.strokeStyle = "#1e1b4b";
-    ctx.lineWidth = 1;
+    // 网格背景
+    ctx.strokeStyle = "#1e1b4b"; ctx.lineWidth = 1;
     for(let i = 1; i < 4; i++) {
-        ctx.beginPath();
-        ctx.moveTo(0, h * i / 4);
-        ctx.lineTo(w, h * i / 4);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, h * i / 4); ctx.lineTo(w, h * i / 4); ctx.stroke();
     }
 
-    // 核心：像织毛衣一样渲染出红绿相间的波动折线
+    // 连线渲染
     for (let i = 1; i < pricesHistory.length; i++) {
         ctx.beginPath();
         ctx.moveTo(getX(i - 1), getY(pricesHistory[i - 1]));
         ctx.lineTo(getX(i), getY(pricesHistory[i]));
-        
-        // 当天价格比前一天高则为绿(涨)，低则为红(跌)
         let isUp = pricesHistory[i] >= pricesHistory[i - 1];
         ctx.strokeStyle = isUp ? "#10b981" : "#ef4444";
-        ctx.lineWidth = 3;
-        ctx.shadowBlur = 6;
-        ctx.shadowColor = isUp ? "#10b981" : "#ef4444";
+        ctx.lineWidth = 3; ctx.shadowBlur = 4; ctx.shadowColor = ctx.strokeStyle;
         ctx.stroke();
     }
-    ctx.shadowBlur = 0; // 重置阴影防污染
+    ctx.shadowBlur = 0;
 }
 
-// 🟢 买入操控逻辑
-function actionBuy() {
-    if (cash <= 0 || holdings > 0) return;
-    Sound.playBuy();
+// 🟢 开多单
+function actionOpenLong() {
+    if (positionType !== 'NONE' || cash <= 0) return;
+    Sound.playTrade();
 
-    avgCost = currentPrice;
+    positionType = 'LONG';
+    entryPrice = currentPrice;
     holdings = Math.floor(cash / currentPrice);
     cash = round05(cash - (holdings * currentPrice));
 
-    // 检测是不是抄到了本阶段的相对低点
     if (currentPrice <= localMinPrice * 1.02) {
-        showToast("🔥 神级抄底！", "买在精准底部的极佳位置", "#10b981");
+        showToast("🔥 神级抄底！", "极佳的多单进场点位", "#10b981");
+    }
+    localMaxPrice = currentPrice;
+    toggleControlButtons(true);
+}
+
+// 🔴 开空单 (借券高位抛售)
+function actionOpenShort() {
+    if (positionType !== 'NONE' || cash <= 0) return;
+    Sound.playTrade();
+
+    positionType = 'SHORT';
+    entryPrice = currentPrice;
+    holdings = Math.floor(cash / currentPrice);
+    // 做空锁定相应的保证金/虚拟本金资产
+    cash = round05(cash - (holdings * currentPrice));
+
+    if (currentPrice >= localMaxPrice * 0.98) {
+        showToast("🦊 精准放空！", "高位成功埋伏空单", "#ef4444");
+    }
+    localMinPrice = currentPrice;
+    toggleControlButtons(true);
+}
+
+// 🔵 平仓结算现价
+function actionClosePosition() {
+    if (positionType === 'NONE') return;
+
+    let floatingPnl = 0;
+    if (positionType === 'LONG') {
+        floatingPnl = (currentPrice - entryPrice) * holdings;
+        // 退回本金加利润
+        cash = round05(cash + (entryPrice * holdings + floatingPnl));
+    } else if (positionType === 'SHORT') {
+        floatingPnl = (entryPrice - currentPrice) * holdings;
+        // 空单平仓：退回锁定的开仓本金加空头利润
+        cash = round05(cash + (entryPrice * holdings + floatingPnl));
     }
 
-    // 刷新波段计价器，为出货逃顶做准备
+    Sound.playClose(floatingPnl >= 0);
+
+    if (floatingPnl > 0) {
+        showToast("💰 顺利落袋", `RM +${floatingPnl.toFixed(2)} 终止仓位`, "#f59e0b");
+    } else {
+        showToast("📉 认赔出局", `RM ${floatingPnl.toFixed(2)} 割肉离场`, "#ef4444");
+    }
+
+    // 还原波段边界
+    localMinPrice = currentPrice;
     localMaxPrice = currentPrice;
 
-    document.getElementById("buyBtn").disabled = true;
-    document.getElementById("sellBtn").disabled = false;
+    positionType = 'NONE';
+    holdings = 0;
+    entryPrice = 0;
+
+    toggleControlButtons(false);
     renderGame();
 }
 
-// 🔴 卖出操控逻辑
-function actionSell() {
-    if (holdings <= 0) return;
-
-    let pnl = round05((currentPrice - avgCost) * holdings);
-    cash = round05(cash + (holdings * currentPrice));
-    holdings = 0;
-
-    Sound.playSell(pnl >= 0);
-
-    if (pnl > 0) {
-        if (currentPrice >= localMaxPrice * 0.98) {
-            showToast("👑 逃顶大师！", `RM +${pnl.toFixed(2)} 完美止盈于最高点`, "#f59e0b");
-        } else {
-            showToast("💰 成功斩获利润", `RM +${pnl.toFixed(2)} 顺利出局`, "#10b981");
-        }
-    } else {
-        showToast("📉 割肉止损", `RM ${pnl.toFixed(2)} 留得青山在`, "#ef4444");
-    }
-
-    // 刷新波段计价器，迎接下一次抄底
-    localMinPrice = currentPrice;
-
-    document.getElementById("buyBtn").disabled = false;
-    document.getElementById("sellBtn").disabled = true;
-    renderGame();
+function toggleControlButtons(hasPosition) {
+    document.getElementById("buyBtn").disabled = hasPosition;
+    document.getElementById("shortBtn").disabled = hasPosition;
+    document.getElementById("closeBtn").disabled = !hasPosition;
 }
 
 function showToast(title, desc, color) {
@@ -455,47 +482,48 @@ function showToast(title, desc, color) {
     document.getElementById("toastTitle").innerText = title;
     document.getElementById("toastTitle").style.color = color;
     document.getElementById("toastDesc").innerText = desc;
-    
     toast.classList.add("active");
-    setTimeout(() => { toast.classList.remove("active"); }, 1800);
+    setTimeout(() => { toast.classList.remove("active"); }, 1600);
 }
 
-function triggerGameOver() {
+function triggerGameOver(reason) {
     isGameOver = true;
     Sound.playBoom();
-    
-    // 给游戏窗口施加震动碎屏特效
-    const win = document.getElementById("gameWindow");
-    win.classList.add("shake");
-    
-    document.getElementById("buyBtn").disabled = true;
-    document.getElementById("sellBtn").disabled = true;
-    
+    document.getElementById("gameWindow").classList.add("shake");
+    document.getElementById("closeBtn").disabled = true;
+    document.getElementById("gameOverReason").innerText = reason;
     document.getElementById("gameOverOverlay").classList.add("active");
+}
+
+function triggerGameWin() {
+    isGameOver = true;
+    Sound.playClose(true);
+    document.getElementById("closeBtn").disabled = true;
+    document.getElementById("gameWinOverlay").classList.add("active");
 }
 
 function restartGame() {
     document.getElementById("gameWindow").classList.remove("shake");
     document.getElementById("gameOverOverlay").classList.remove("active");
+    document.getElementById("gameWinOverlay").classList.remove("active");
     
     cash = 5000.00;
+    positionType = 'NONE';
     holdings = 0;
-    avgCost = 0;
+    entryPrice = 0;
     currentPrice = 10.00;
     pricesHistory = [];
     isGameOver = false;
     trendDuration = 0;
 
     initChart();
-    document.getElementById("buyBtn").disabled = false;
-    document.getElementById("sellBtn").disabled = true;
+    toggleControlButtons(false);
     renderGame();
 }
 
-// 🚀 启动
 document.addEventListener("DOMContentLoaded", () => {
     initChart();
-    setInterval(gameTick, 250); // 每250毫秒跑一次价格K线步进
+    setInterval(gameTick, 230); // 步进速度稍微加快，体验双向多空的爽感
 });
 </script>
 </body>
