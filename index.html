@@ -2,529 +2,393 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>📈 韭菜保卫战 2.0：双向多空对决 📈</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏛️ 宏观对冲：全球巨鳄模拟器 🏛️</title>
 <style>
 * { box-sizing: border-box; }
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: #060212;
-    margin: 0;
-    padding: 10px;
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    overflow: hidden;
-    -webkit-tap-highlight-color: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+    background: #03010a; color: #fff; margin: 0; padding: 15px;
+    display: flex; justify-content: center; align-items: center; min-height: 100vh;
 }
 
-.game-container {
-    width: 100%;
-    max-width: 500px;
-    background: #0f0a21;
-    border: 3px solid #3b82f6;
-    border-radius: 20px;
-    padding: 15px;
-    box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
-    position: relative;
-    overflow: hidden;
+.terminal-container {
+    width: 100%; max-width: 1100px; height: 680px;
+    background: #090615; border: 2px solid #334155; border-radius: 16px;
+    display: grid; grid-template-columns: 350px 1fr; gap: 15px; padding: 15px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
 }
 
-/* 📊 仪表盘样式 */
+/* 📰 左侧：赛博新闻终端 */
+.news-panel {
+    background: #020006; border: 1px solid #1e293b; border-radius: 12px;
+    display: flex; flex-direction: column; overflow: hidden;
+}
+.panel-title {
+    padding: 12px; font-size: 14px; font-weight: bold; color: #60a5fa;
+    border-bottom: 1px solid #1e293b; background: #0b071e; letter-spacing: 1px;
+}
+.news-stream {
+    flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+}
+.news-card {
+    background: #090615; border-left: 4px solid #3b82f6; padding: 10px; border-radius: 4px;
+    font-size: 13px; line-height: 1.4; animation: slideIn 0.3s ease-out;
+}
+.news-card.urgent { border-left-color: #ef4444; background: #1a0505; }
+.news-card.success { border-left-color: #10b981; background: #051a0e; }
+.news-time { font-size: 11px; color: #64748b; margin-bottom: 4px; }
+
+/* 📊 右侧：资产交易大厅 */
+.trading-panel { display: flex; flex-direction: column; gap: 15px; }
 .header-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 12px;
+    background: linear-gradient(90deg, #0f0a28 0%, #05030f 100%);
+    border: 1px solid #334155; border-radius: 12px; padding: 15px;
+    display: flex; justify-content: space-between; align-items: center;
 }
-.stat-box {
-    background: #090514;
-    border: 1px solid #251b45;
-    border-radius: 10px;
-    padding: 8px;
-    text-align: center;
-}
-.stat-box.full-width {
-    grid-column: span 2;
-    border-color: #f59e0b;
-    background: linear-gradient(180deg, #170f35 0%, #090514 100%);
-}
-.lbl { font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
-.val { font-size: 18px; font-weight: bold; font-family: monospace; margin-top: 4px; }
-#net-worth { color: #f59e0b; font-size: 26px; text-shadow: 0 0 10px rgba(245,158,11,0.5); }
-#target-worth { color: #60a5fa; font-size: 12px; margin-top: 2px; }
-#position-status { color: #94a3b8; }
-#floating-pnl { font-size: 14px; font-weight: bold; }
+.networth-box { display: flex; flex-direction: column; }
+.networth-box .val { font-size: 32px; font-weight: bold; color: #f59e0b; font-family: monospace; }
 
-/* 📉 K线画布容器 */
-.chart-container {
-    position: relative;
-    background: #020005;
-    border: 2px solid #1e1b4b;
-    border-radius: 12px;
-    height: 230px;
-    width: 100%;
-    overflow: hidden;
-    margin-bottom: 15px;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+/* 📈 资产网格 */
+.assets-grid {
+    flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
 }
-canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
+.asset-row {
+    background: #020005; border: 1px solid #1e293b; border-radius: 12px;
+    padding: 12px; display: flex; flex-direction: column; justify-content: space-between;
+    transition: border-color 0.2s;
 }
-.price-tag {
-    position: absolute;
-    right: 5px;
-    background: rgba(0,0,0,0.8);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: monospace;
-    font-size: 12px;
-    pointer-events: none;
-    border: 1px solid #334155;
-    z-index: 10;
-}
-#current-price-tag { color: #ffffff; }
+.asset-row:hover { border-color: #475569; }
+.asset-info { display: flex; justify-content: space-between; align-items: center; }
+.asset-name { font-size: 16px; font-weight: bold; color: #f8fafc; }
+.asset-price { font-size: 20px; font-weight: bold; font-family: monospace; }
+.asset-price.up { color: #10b981; }
+.asset-price.down { color: #ef4444; }
 
-/* 🕹️ 核心多空操作面板 */
-.controls-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+.asset-pos-info {
+    font-size: 12px; color: #94a3b8; margin: 8px 0; display: flex; justify-content: space-between;
+    background: #090615; padding: 6px; border-radius: 4px;
 }
+
+.action-buttons { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 6px; }
 .btn {
-    padding: 14px;
-    font-size: 16px;
-    font-weight: 900;
-    border: 2px solid #fff;
-    border-radius: 14px;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: transform 0.05s, opacity 0.2s;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    padding: 8px 4px; font-size: 11px; font-weight: bold; border: none; border-radius: 6px;
+    cursor: pointer; text-transform: uppercase; transition: opacity 0.1s;
 }
-.btn:active { transform: scale(0.95); }
-.btn:disabled { opacity: 0.15; cursor: not-allowed; transform: none; }
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.15; cursor: not-allowed; }
+.btn-long { background: #10b981; color: #fff; }
+.btn-short { background: #ef4444; color: #fff; }
+.btn-close { background: #3b82f6; color: #fff; }
 
-.btn-buy { background: linear-gradient(180deg, #10b981 0%, #059669 100%); color: #fff; border-color: #a7f3d0; }
-.btn-short { background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%); color: #fff; border-color: #fca5a5; }
-.btn-close { background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%); color: #fff; border-color: #93c5fd; grid-column: span 2; }
-
-/* ⚡ 浮动提示 */
-.floating-tip {
-    position: absolute;
-    left: 50%; top: 45%;
-    transform: translate(-50%, -50%) scale(0);
-    background: rgba(0, 0, 0, 0.95);
-    padding: 15px 25px;
-    border-radius: 12px;
-    text-align: center;
-    z-index: 100;
-    pointer-events: none;
-    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 2px solid #fff;
-    width: 80%;
-}
-.floating-tip.active { transform: translate(-50%, -50%) scale(1); }
-.floating-tip h3 { margin: 0 0 5px 0; font-size: 22px; }
-.floating-tip p { margin: 0; font-size: 16px; font-family: monospace; }
-
-/* 💥 全屏结局遮罩 */
+/* 全屏结算遮罩 */
 .overlay {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 200;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.5s ease;
-    padding: 20px;
-    text-align: center;
+    position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(5,2,15,0.98);
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.4s;
 }
 .overlay.active { opacity: 1; pointer-events: auto; }
-.overlay.fail { background: rgba(22, 0, 0, 0.96); }
-.overlay.win { background: rgba(10, 25, 10, 0.96); border: 4px solid #f59e0b; }
+.overlay h1 { font-size: 45px; margin-bottom: 15px; }
+.overlay button { background: #fff; color:#000; border:none; padding:12px 35px; font-weight:bold; border-radius:6px; cursor:pointer; }
 
-.overlay h1 { font-size: 38px; margin-bottom: 10px; text-shadow: 0 0 20px currentColor; }
-.fail h1 { color: #ef4444; }
-.win h1 { color: #f59e0b; }
-.overlay p { font-size: 16px; color: #94a3b8; margin-bottom: 25px; }
-.restart-btn {
-    background: #fff; color: #000; border: none; padding: 12px 30px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer;
-}
-
-@keyframes shake {
-    0%, 100% { transform: translate(0, 0); }
-    20%, 60% { transform: translate(-4px, 4px); }
-    40%, 80% { transform: translate(4px, -4px); }
-}
-.shake { animation: shake 0.4s ease-in-out; }
+@keyframes slideIn { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 </style>
 </head>
 <body>
 
-<div class="game-container" id="gameWindow">
-    <div class="header-stats">
-        <div class="stat-box full-width">
-            <div class="lbl">Net Worth (总资产)</div>
-            <div class="val" id="net-worth">RM 5,000.00</div>
-            <div id="target-worth">通关目标: RM 100,000,000.00 (1亿自由)</div>
-        </div>
-        <div class="stat-box">
-            <div class="lbl">Position (当前持仓)</div>
-            <div class="val" id="position-status">空仓 (CASH)</div>
-            <div id="floating-pnl">--</div>
-        </div>
-        <div class="stat-box">
-            <div class="lbl">Entry Price (开仓均价)</div>
-            <div class="val" id="avg-cost">--</div>
-            <div class="lbl" style="margin-top:4px;">Size (数量): <span id="holding-size">0</span></div>
+<div class="terminal-container" id="terminal">
+    <!-- 左侧：实时宏观路透社终端 -->
+    <div class="news-panel">
+        <div class="panel-title">📡 LIVE MACRO REUTERS (实时宏观事件)</div>
+        <div class="news-stream" id="newsStream">
+            <div class="news-card">
+                <div class="news-time">09:00:00</div>
+                全球宏观对冲市场开盘。当前基准利率：4.50%。请紧盯宏观政策与地缘政治动向。
+            </div>
         </div>
     </div>
 
-    <!-- 盘面画布 -->
-    <div class="chart-container">
-        <div class="price-tag" id="current-price-tag" style="top: 50%;">RM 10.00</div>
-        <canvas id="klineCanvas"></canvas>
+    <!-- 右侧：多空对冲交易大厅 -->
+    <div class="trading-panel">
+        <div class="header-stats">
+            <div class="networth-box">
+                <span style="font-size:12px; color:#94a3b8; font-weight:bold;">AUM (管理总资产)</span>
+                <span class="val" id="totalNetWorth">RM 10,000,000.00</span>
+            </div>
+            <div style="text-align: right; font-size: 13px; color: #64748b;">
+                目标：<span style="color:#f59e0b; font-weight:bold;">RM 50,000,000.00</span><br>
+                在瞬息万变的宏观黑天鹅中活下来并赚取5倍利润！
+            </div>
+        </div>
+
+        <!-- 4大核心对冲资产网格 -->
+        <div class="assets-grid" id="assetsGrid">
+            <!-- 科技股 -->
+            <div class="asset-row" id="row-tech">
+                <div class="asset-info">
+                    <span class="asset-name">💻 纳指科技 (TECH)</span>
+                    <span class="asset-price" id="price-tech">RM 150.00</span>
+                </div>
+                <div class="asset-pos-info" id="pos-tech">仓位: 空仓 | 浮盈: --</div>
+                <div class="action-buttons">
+                    <button class="btn btn-long" onclick="openPos('tech','LONG')">Long</button>
+                    <button class="btn btn-short" onclick="openPos('tech','SHORT')">Short</button>
+                    <button class="btn btn-close" onclick="closePos('tech')" disabled>Close</button>
+                </div>
+            </div>
+
+            <!-- 原油 -->
+            <div class="asset-row" id="row-oil">
+                <div class="asset-info">
+                    <span class="asset-name">🛢️ 布伦特原油 (OIL)</span>
+                    <span class="asset-price" id="price-oil">RM 80.00</span>
+                </div>
+                <div class="asset-pos-info" id="pos-oil">仓位: 空仓 | 浮盈: --</div>
+                <div class="action-buttons">
+                    <button class="btn btn-long" onclick="openPos('oil','LONG')">Long</button>
+                    <button class="btn btn-short" onclick="openPos('oil','SHORT')">Short</button>
+                    <button class="btn btn-close" onclick="closePos('oil')" disabled>Close</button>
+                </div>
+            </div>
+
+            <!-- 黄金 -->
+            <div class="asset-row" id="row-gold">
+                <div class="asset-info">
+                    <span class="asset-name">👑 现货黄金 (GOLD)</span>
+                    <span class="asset-price" id="price-gold">RM 200.00</span>
+                </div>
+                <div class="asset-pos-info" id="pos-gold">仓位: 空仓 | 浮盈: --</div>
+                <div class="action-buttons">
+                    <button class="btn btn-long" onclick="openPos('gold','LONG')">Long</button>
+                    <button class="btn btn-short" onclick="openPos('gold','SHORT')">Short</button>
+                    <button class="btn btn-close" onclick="closePos('gold')" disabled>Close</button>
+                </div>
+            </div>
+
+            <!-- 大马综合指数 -->
+            <div class="asset-row" id="row-index">
+                <div class="asset-info">
+                    <span class="asset-name">🏛️ 恒指/综指 (INDEX)</span>
+                    <span class="asset-price" id="price-index">RM 1600.00</span>
+                </div>
+                <div class="asset-pos-info" id="pos-index">仓位: 空仓 | 浮盈: --</div>
+                <div class="action-buttons">
+                    <button class="btn btn-long" onclick="openPos('index','LONG')">Long</button>
+                    <button class="btn btn-short" onclick="openPos('index','SHORT')">Short</button>
+                    <button class="btn btn-close" onclick="closePos('index')" disabled>Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- 双向操控面板 -->
-    <div class="controls-grid">
-        <button class="btn btn-buy" id="buyBtn" onclick="actionOpenLong()">🟢 做多 (LONG)</button>
-        <button class="btn btn-short" id="shortBtn" onclick="actionOpenShort()">🔴 做空 (SHORT)</button>
-        <button class="btn btn-close" id="closeBtn" onclick="actionClosePosition()" disabled>🔵 平仓现价结算 (CLOSE)</button>
-    </div>
-
-    <!-- 弹窗 -->
-    <div class="floating-tip" id="toastBox">
-        <h3 id="toastTitle">🚀 抄底成功</h3>
-        <p id="toastDesc">RM +0.00</p>
-    </div>
-
-    <!-- 结局遮罩 -->
-    <div class="overlay fail" id="gameOverOverlay">
-        <h1 id="failTitle">💥 爆仓了 💥</h1>
-        <p id="gameOverReason">保证金不足，多头/空头强平，资金归零！</p>
-        <button class="restart-btn" onclick="restartGame()">不服重来</button>
-    </div>
-
-    <div class="overlay win" id="gameWinOverlay">
-        <h1>🏆 财务自由！🏆</h1>
-        <p>恭喜！你成功通过高频双向对冲交易，赚够了1个亿！庄家已经被你完全收割，天台现在属于他们！</p>
-        <button class="restart-btn" style="background:#f59e0b; color:#000;" onclick="restartGame()">傲视群雄 再来一局</button>
+    <!-- 结局蒙层 -->
+    <div class="overlay" id="endOverlay">
+        <h1 id="endTitle" style="color: #10b981;">🏆 达成终极对冲之王</h1>
+        <p id="endDesc">你成功从宏观资本博弈中收割了足够的利润。</p>
+        <button onclick="restartGame()">重新执掌基金</button>
     </div>
 </div>
 
 <script>
-// --- 🎵 电子合成音效 ---
-const Sound = {
-    ctx: null,
-    init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
-    playTrade() {
-        this.init(); let osc = this.ctx.createOscillator(), g = this.ctx.createGain();
-        osc.connect(g); g.connect(this.ctx.destination); osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, this.ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(987.77, this.ctx.currentTime + 0.12);
-        g.gain.setValueAtTime(0.12, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
-        osc.start(); osc.stop(this.ctx.currentTime + 0.12);
-    },
-    playClose(isWin) {
-        this.init(); let osc = this.ctx.createOscillator(), g = this.ctx.createGain();
-        osc.connect(g); g.connect(this.ctx.destination); osc.type = 'sine';
-        osc.frequency.setValueAtTime(isWin ? 880 : 330, this.ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(isWin ? 1318.51 : 165, this.ctx.currentTime + 0.25);
-        g.gain.setValueAtTime(0.15, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
-        osc.start(); osc.stop(this.ctx.currentTime + 0.25);
-    },
-    playBoom() {
-        this.init(); let osc = this.ctx.createOscillator(), g = this.ctx.createGain();
-        osc.connect(g); g.connect(this.ctx.destination); osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(120, this.ctx.currentTime); osc.frequency.linearRampToValueAtTime(20, this.ctx.currentTime + 0.7);
-        g.gain.setValueAtTime(0.35, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.7);
-        osc.start(); osc.stop(this.ctx.currentTime + 0.7);
-    }
+// 精准 0.05 结算
+function round05(v) { return Math.round(v / 0.05) * 0.05; }
+
+// 💼 核心数据结构
+let cash = 10000000.00; 
+let assets = {
+    tech:  { name: "科技股", price: 150.00,  pos: "NONE", size: 0, entry: 0, bias: 0, lastPrice: 150.00 },
+    oil:   { name: "原油",   price: 80.00,   pos: "NONE", size: 0, entry: 0, bias: 0, lastPrice: 80.00 },
+    gold:  { name: "黄金",   price: 200.00,  pos: "NONE", size: 0, entry: 0, bias: 0, lastPrice: 200.00 },
+    index: { name: "指数",   price: 1600.00, pos: "NONE", size: 0, entry: 0, bias: 0, lastPrice: 1600.00 }
 };
 
-function round05(val) { return Math.round(val / 0.05) * 0.05; }
+let gameActive = true;
+let gameTime = 0;
 
-// 🎮 核心交易参数配置
-let cash = 5000.00;
-let positionType = 'NONE'; // 'NONE', 'LONG', 'SHORT'
-let holdings = 0;          // 手中头寸数量
-let entryPrice = 0;        // 开仓成本价
-let currentPrice = 10.00;
-let isGameOver = false;
+// 📰 宏观事件库（高逻辑驱动链）
+const macroEvents = [
+    { text: "🚨 突发：中东核心产油国宣布全面提高出口关税，地缘政治冲突升级！", effect: { oil: 2.5, gold: 1.5, tech: -1.0, index: -0.8 }, type: "urgent", duration: 25 },
+    { text: "🏛️ 联储重磅：最新通胀数据超预期爆表，美联储表态不排除连续加息50Bps！", effect: { tech: -3.0, index: -1.5, gold: -1.0, oil: -0.5 }, type: "urgent", duration: 30 },
+    { text: "📉 宏观利好：全球半导体供应链瓶颈全面消融，芯片巨头全面调高出货预期！", effect: { tech: 2.8, index: 1.2, oil: 0.5, gold: -0.8 }, type: "success", duration: 25 },
+    { text: "💣 突发黑天鹅：海外某万亿级巨头对冲基金突发爆仓，触发全球流动性踩踏挤兑！", effect: { index: -3.5, tech: -3.0, gold: 2.5, oil: -2.0 }, type: "urgent", duration: 35 },
+    { text: "🕊️ 停火曙光：多方签署中东地缘和平框架备忘录，市场避险情绪全面降温。", effect: { oil: -3.0, gold: -2.5, tech: 1.5, index: 1.0 }, type: "success", duration: 25 },
+    { text: "📊 经济数据：最新非农就业人数远不及预期，引发市场强烈“衰退与降息”双重预期！", effect: { gold: 2.0, tech: 1.8, index: 0.8, oil: -1.5 }, type: "success", duration: 30 }
+];
 
-const TARGET_WIN = 100000000.00; // 一亿小目标通关！
+// 🔄 启动定时器
+document.addEventListener("DOMContentLoaded", () => {
+    setInterval(tickGame, 300); // 300毫秒步进
+    setInterval(triggerNews, 9000); // 每9秒强行切入一则重大宏观新闻
+});
 
-// 📊 画布配置
-const canvas = document.getElementById("klineCanvas");
-const ctx = canvas.getContext("2d");
-let pricesHistory = [];
-const maxDataPoints = 45;
+// 🏭 价格与逻辑演变引擎
+function tickGame() {
+    if (!gameActive) return;
+    gameTime++;
 
-let trendDuration = 0;
-let currentTrendType = 'sideways';
-let localMinPrice = 10.00;
-let localMaxPrice = 10.00;
+    let totalAssetValue = cash;
 
-function initChart() {
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * window.devicePixelRatio;
-    canvas.height = rect.height * window.devicePixelRatio;
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-    
-    for(let i=0; i < maxDataPoints; i++) {
-        currentPrice = round05(currentPrice + (Math.random() - 0.5) * 0.4);
-        if(currentPrice < 1.00) currentPrice = 1.00;
-        pricesHistory.push(currentPrice);
-    }
-    localMinPrice = currentPrice;
-    localMaxPrice = currentPrice;
-}
-
-function gameTick() {
-    if (isGameOver) return;
-
-    // 趋势随机动力引擎
-    if (trendDuration <= 0) {
-        let r = Math.random();
-        trendDuration = Math.floor(Math.random() * 12) + 6;
-        if (r < 0.4) currentTrendType = 'sideways';
-        else if (r < 0.7) currentTrendType = 'bull';
-        else currentTrendType = 'bear';
-    }
-    trendDuration--;
-
-    let change = 0;
-    if (currentTrendType === 'bull') change = (Math.random() - 0.22) * 0.7;
-    else if (currentTrendType === 'bear') change = (Math.random() - 0.78) * 0.7;
-    else change = (Math.random() - 0.5) * 0.45;
-
-    currentPrice = round05(currentPrice + change);
-    if (currentPrice < 0.10) currentPrice = 0.10; // 保留最低残值
-
-    if(currentPrice < localMinPrice) localMinPrice = currentPrice;
-    if(currentPrice > localMaxPrice) localMaxPrice = currentPrice;
-
-    pricesHistory.push(currentPrice);
-    if (pricesHistory.length > maxDataPoints) pricesHistory.shift();
-
-    renderGame();
-}
-
-function renderGame() {
-    // 计算实时多空方向的盈亏
-    let floatingPnl = 0;
-    if (positionType === 'LONG') {
-        floatingPnl = (currentPrice - entryPrice) * holdings;
-    } else if (positionType === 'SHORT') {
-        floatingPnl = (entryPrice - currentPrice) * holdings;
-    }
-
-    let netWorth = round05(cash + (positionType !== 'NONE' ? (entryPrice * holdings + floatingPnl) : 0));
-    if (positionType === 'NONE') netWorth = cash;
-
-    document.getElementById("net-worth").innerText = "RM " + netWorth.toFixed(2);
-    document.getElementById("holding-size").innerText = holdings;
-
-    // 状态机面板UI动态刷新
-    const pnlEl = document.getElementById("floating-pnl");
-    if (positionType !== 'NONE') {
-        let pnlPercent = (floatingPnl / (entryPrice * holdings)) * 100;
-        pnlEl.innerText = `${floatingPnl >= 0 ? '+' : ''}${floatingPnl.toFixed(2)} (${pnlPercent.toFixed(2)}%)`;
-        pnlEl.style.color = floatingPnl >= 0 ? "#10b981" : "#ef4444";
+    for (let key in assets) {
+        let ast = assets[key];
         
-        document.getElementById("position-status").innerText = positionType === 'LONG' ? "多单持仓 (LONG)" : "空单持仓 (SHORT)";
-        document.getElementById("position-status").style.color = positionType === 'LONG' ? "#10b981" : "#ef4444";
-        document.getElementById("avg-cost").innerText = "RM " + entryPrice.toFixed(2);
+        // 市场常规内生波动 + 事件偏向因子(bias)
+        let noise = (Math.random() - 0.5) * (ast.price * 0.012);
+        let trend = ast.bias * (ast.price * 0.006);
+        
+        ast.lastPrice = ast.price;
+        ast.price = round05(ast.price + noise + trend);
+        if(ast.price < 1.00) ast.price = 1.00;
+
+        // 逐步衰减新闻事件的长尾效应
+        if (ast.bias !== 0) {
+            ast.bias *= 0.95; 
+            if (Math.abs(ast.bias) < 0.05) ast.bias = 0;
+        }
+
+        // 计算当前资产包浮动盈亏
+        let fPnl = 0;
+        if (ast.pos === 'LONG') {
+            fPnl = (ast.price - ast.entry) * ast.size;
+            totalAssetValue += (ast.entry * ast.size) + fPnl;
+        } else if (ast.pos === 'SHORT') {
+            fPnl = (ast.entry - ast.price) * ast.size;
+            totalAssetValue += (ast.entry * ast.size) + fPnl;
+        }
+
+        // 刷新单只资产的 UI 面板
+        updateAssetUI(key, fPnl);
+    }
+
+    // 规范总资产显示
+    totalAssetValue = round05(totalAssetValue);
+    document.getElementById("totalNetWorth").innerText = "RM " + totalAssetValue.toFixed(2);
+
+    // 💥 破产判定
+    if (totalAssetValue <= 100000) {
+        endGame(false, "💥 仓位对冲失败！基金遭遇史诗级穿仓，管理资产蒸发殆尽，被清盘出局！");
+    }
+    // 🏆 通关判定
+    if (totalAssetValue >= 50000000.00) {
+        endGame(true, "🏆 宏观巨鳄通关！你成功在多场黑天鹅风暴中完美对冲，狂赚5倍资产，晋升全球对冲之王！");
+    }
+}
+
+// 📰 注入突发新闻并重组宏观趋势
+function triggerNews() {
+    if (!gameActive) return;
+    let evt = macroEvents[Math.floor(Math.random() * macroEvents.length)];
+    
+    // 改变宏观资产偏向因子
+    for (let key in evt.effect) {
+        assets[key].bias = evt.effect[key];
+    }
+
+    // 渲染新闻到左侧流
+    const stream = document.getElementById("newsStream");
+    let now = new Date();
+    let timeStr = now.toTimeString().split(' ')[0];
+
+    let card = document.createElement("div");
+    card.className = `news-card ${evt.type === 'urgent' ? 'urgent' : 'success'}`;
+    card.innerHTML = `<div class="news-time">${timeStr}</div><div>${evt.text}</div>`;
+    
+    stream.insertBefore(card, stream.firstChild);
+}
+
+function updateAssetUI(key, fPnl) {
+    let ast = assets[key];
+    let priceEl = document.getElementById(`price-${key}`);
+    priceEl.innerText = "RM " + ast.price.toFixed(2);
+    
+    // 涨跌红绿
+    if(ast.price >= ast.lastPrice) {
+        priceEl.className = "asset-price up";
     } else {
-        document.getElementById("position-status").innerText = "空仓 (CASH)";
-        document.getElementById("position-status").style.color = "#94a3b8";
-        pnlEl.innerText = "--"; pnlEl.style.color = "#fff";
-        document.getElementById("avg-cost").innerText = "--";
+        priceEl.className = "asset-price down";
     }
 
-    // 💥 判定爆仓或强平
-    if (netWorth <= 0.05 && positionType !== 'NONE') {
-        triggerGameOver(positionType === 'LONG' ? '多头多单遭血洗爆仓！' : '空头遭大庄拉盘逼空爆仓（Short Squeeze）！');
-        return;
-    }
-
-    // 🏆 判定大结局通关：达成1亿自由
-    if (netWorth >= TARGET_WIN) {
-        triggerGameWin();
-        return;
-    }
-
-    drawChart();
-}
-
-function drawChart() {
-    const w = canvas.width / window.devicePixelRatio;
-    const h = canvas.height / window.devicePixelRatio;
-    ctx.clearRect(0, 0, w, h);
-
-    let minP = Math.min(...pricesHistory);
-    let maxP = Math.max(...pricesHistory);
-    if(maxP === minP) { maxP += 1; minP -= 1; }
-    let pad = (maxP - minP) * 0.15;
-    maxP += pad; minP -= pad;
-
-    const getX = (index) => (index * (w / (maxDataPoints - 1)));
-    const getY = (val) => h - ((val - minP) / (maxP - minP) * h);
-
-    document.getElementById("current-price-tag").style.top = `${getY(currentPrice) + 15}px`;
-    document.getElementById("current-price-tag").innerText = "RM " + currentPrice.toFixed(2);
-
-    // 网格背景
-    ctx.strokeStyle = "#1e1b4b"; ctx.lineWidth = 1;
-    for(let i = 1; i < 4; i++) {
-        ctx.beginPath(); ctx.moveTo(0, h * i / 4); ctx.lineTo(w, h * i / 4); ctx.stroke();
-    }
-
-    // 连线渲染
-    for (let i = 1; i < pricesHistory.length; i++) {
-        ctx.beginPath();
-        ctx.moveTo(getX(i - 1), getY(pricesHistory[i - 1]));
-        ctx.lineTo(getX(i), getY(pricesHistory[i]));
-        let isUp = pricesHistory[i] >= pricesHistory[i - 1];
-        ctx.strokeStyle = isUp ? "#10b981" : "#ef4444";
-        ctx.lineWidth = 3; ctx.shadowBlur = 4; ctx.shadowColor = ctx.strokeStyle;
-        ctx.stroke();
-    }
-    ctx.shadowBlur = 0;
-}
-
-// 🟢 开多单
-function actionOpenLong() {
-    if (positionType !== 'NONE' || cash <= 0) return;
-    Sound.playTrade();
-
-    positionType = 'LONG';
-    entryPrice = currentPrice;
-    holdings = Math.floor(cash / currentPrice);
-    cash = round05(cash - (holdings * currentPrice));
-
-    if (currentPrice <= localMinPrice * 1.02) {
-        showToast("🔥 神级抄底！", "极佳的多单进场点位", "#10b981");
-    }
-    localMaxPrice = currentPrice;
-    toggleControlButtons(true);
-}
-
-// 🔴 开空单 (借券高位抛售)
-function actionOpenShort() {
-    if (positionType !== 'NONE' || cash <= 0) return;
-    Sound.playTrade();
-
-    positionType = 'SHORT';
-    entryPrice = currentPrice;
-    holdings = Math.floor(cash / currentPrice);
-    // 做空锁定相应的保证金/虚拟本金资产
-    cash = round05(cash - (holdings * currentPrice));
-
-    if (currentPrice >= localMaxPrice * 0.98) {
-        showToast("🦊 精准放空！", "高位成功埋伏空单", "#ef4444");
-    }
-    localMinPrice = currentPrice;
-    toggleControlButtons(true);
-}
-
-// 🔵 平仓结算现价
-function actionClosePosition() {
-    if (positionType === 'NONE') return;
-
-    let floatingPnl = 0;
-    if (positionType === 'LONG') {
-        floatingPnl = (currentPrice - entryPrice) * holdings;
-        // 退回本金加利润
-        cash = round05(cash + (entryPrice * holdings + floatingPnl));
-    } else if (positionType === 'SHORT') {
-        floatingPnl = (entryPrice - currentPrice) * holdings;
-        // 空单平仓：退回锁定的开仓本金加空头利润
-        cash = round05(cash + (entryPrice * holdings + floatingPnl));
-    }
-
-    Sound.playClose(floatingPnl >= 0);
-
-    if (floatingPnl > 0) {
-        showToast("💰 顺利落袋", `RM +${floatingPnl.toFixed(2)} 终止仓位`, "#f59e0b");
+    // 仓位信息刷新
+    let posEl = document.getElementById(`pos-${key}`);
+    if (ast.pos !== 'NONE') {
+        let pnlPct = (fPnl / (ast.entry * ast.size)) * 100;
+        posEl.innerHTML = `仓位: <span style="color:${ast.pos==='LONG'?'#10b981':'#ef4444'}">${ast.pos}</span> | 浮盈: <span style="color:${fPnl>=0?'#10b981':'#ef4444'}">${fPnl>=0?'+':''}${fPnl.toFixed(2)} (${pnlPct.toFixed(2)}%)</span>`;
     } else {
-        showToast("📉 认赔出局", `RM ${floatingPnl.toFixed(2)} 割肉离场`, "#ef4444");
+        posEl.innerHTML = `仓位: 空仓 | 浮盈: --`;
+    }
+}
+
+// 🟢 开仓逻辑 (多/空)
+function openPos(key, type) {
+    if (!gameActive || assets[key].pos !== 'NONE') return;
+    
+    let ast = assets[key];
+    ast.pos = type;
+    ast.entry = ast.price;
+    
+    // 每次开仓雷打不动动用当前总现金的 80% 全力搏杀单品种
+    let allocation = cash * 0.8;
+    ast.size = Math.floor(allocation / ast.price);
+    cash = round05(cash - (ast.size * ast.price));
+
+    // 控制按钮状态
+    let row = document.getElementById(`row-${key}`);
+    row.querySelectorAll('.btn-long, .btn-short').forEach(b => b.disabled = true);
+    row.querySelector('.btn-close').disabled = false;
+}
+
+// 🔵 平仓逻辑
+function closePos(key) {
+    if (!gameActive || assets[key].pos === 'NONE') return;
+
+    let ast = assets[key];
+    let fPnl = 0;
+    
+    if (ast.pos === 'LONG') {
+        fPnl = (ast.price - ast.entry) * ast.size;
+    } else if (ast.pos === 'SHORT') {
+        fPnl = (ast.entry - ast.price) * ast.size;
     }
 
-    // 还原波段边界
-    localMinPrice = currentPrice;
-    localMaxPrice = currentPrice;
+    // 回笼本金加浮动盈亏
+    cash = round05(cash + (ast.entry * ast.size) + fPnl);
+    
+    // 清空状态机
+    ast.pos = 'NONE';
+    ast.size = 0;
+    ast.entry = 0;
 
-    positionType = 'NONE';
-    holdings = 0;
-    entryPrice = 0;
-
-    toggleControlButtons(false);
-    renderGame();
+    let row = document.getElementById(`row-${key}`);
+    row.querySelectorAll('.btn-long, .btn-short').forEach(b => b.disabled = false);
+    row.querySelector('.btn-close').disabled = true;
 }
 
-function toggleControlButtons(hasPosition) {
-    document.getElementById("buyBtn").disabled = hasPosition;
-    document.getElementById("shortBtn").disabled = hasPosition;
-    document.getElementById("closeBtn").disabled = !hasPosition;
-}
+function endGame(isWin, text) {
+    gameActive = false;
+    let overlay = document.getElementById("endOverlay");
+    let title = document.getElementById("endTitle");
+    let desc = document.getElementById("endDesc");
 
-function showToast(title, desc, color) {
-    const toast = document.getElementById("toastBox");
-    document.getElementById("toastTitle").innerText = title;
-    document.getElementById("toastTitle").style.color = color;
-    document.getElementById("toastDesc").innerText = desc;
-    toast.classList.add("active");
-    setTimeout(() => { toast.classList.remove("active"); }, 1600);
-}
-
-function triggerGameOver(reason) {
-    isGameOver = true;
-    Sound.playBoom();
-    document.getElementById("gameWindow").classList.add("shake");
-    document.getElementById("closeBtn").disabled = true;
-    document.getElementById("gameOverReason").innerText = reason;
-    document.getElementById("gameOverOverlay").classList.add("active");
-}
-
-function triggerGameWin() {
-    isGameOver = true;
-    Sound.playClose(true);
-    document.getElementById("closeBtn").disabled = true;
-    document.getElementById("gameWinOverlay").classList.add("active");
+    title.innerText = isWin ? "🏆 达成对冲巨鳄" : "💥 宣告破产重组";
+    title.style.color = isWin ? "#10b981" : "#ef4444";
+    desc.innerText = text;
+    overlay.classList.add("active");
 }
 
 function restartGame() {
-    document.getElementById("gameWindow").classList.remove("shake");
-    document.getElementById("gameOverOverlay").classList.remove("active");
-    document.getElementById("gameWinOverlay").classList.remove("active");
-    
-    cash = 5000.00;
-    positionType = 'NONE';
-    holdings = 0;
-    entryPrice = 0;
-    currentPrice = 10.00;
-    pricesHistory = [];
-    isGameOver = false;
-    trendDuration = 0;
-
-    initChart();
-    toggleControlButtons(false);
-    renderGame();
+    cash = 10000000.00;
+    for(let key in assets) {
+        assets[key].pos = "NONE";
+        assets[key].size = 0;
+        assets[key].entry = 0;
+        assets[key].bias = 0;
+        let row = document.getElementById(`row-${key}`);
+        row.querySelectorAll('.btn-long, .btn-short').forEach(b => b.disabled = false);
+        row.querySelector('.btn-close').disabled = true;
+    }
+    document.getElementById("endOverlay").classList.remove("active");
+    document.getElementById("newsStream").innerHTML = `<div class="news-card"><div class="news-time">09:00:00</div>基金清算重组完成，重新执掌 1000 万宏观头寸。</div>`;
+    gameActive = true;
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-    initChart();
-    setInterval(gameTick, 230); // 步进速度稍微加快，体验双向多空的爽感
-});
 </script>
 </body>
 </html>
