@@ -3,93 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🏛️ 宏观对冲：全球巨鳄模拟器 🏛️</title>
+<title>🏛️ 宏观对冲 3.0：专业头寸与风险控制终端 🏛️</title>
 <style>
 * { box-sizing: border-box; }
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
-    background: #03010a; color: #fff; margin: 0; padding: 15px;
+    background: #020106; color: #fff; margin: 0; padding: 15px;
     display: flex; justify-content: center; align-items: center; min-height: 100vh;
 }
 
 .terminal-container {
-    width: 100%; max-width: 1100px; height: 680px;
-    background: #090615; border: 2px solid #334155; border-radius: 16px;
-    display: grid; grid-template-columns: 350px 1fr; gap: 15px; padding: 15px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    width: 100%; max-width: 1200px; height: 720px;
+    background: #080512; border: 2px solid #334155; border-radius: 16px;
+    display: grid; grid-template-columns: 340px 1fr; gap: 15px; padding: 15px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.9);
 }
 
-/* 📰 左侧：赛博新闻终端 */
+/* 📰 左侧新闻终端 */
 .news-panel {
-    background: #020006; border: 1px solid #1e293b; border-radius: 12px;
+    background: #010003; border: 1px solid #1e293b; border-radius: 12px;
     display: flex; flex-direction: column; overflow: hidden;
 }
 .panel-title {
-    padding: 12px; font-size: 14px; font-weight: bold; color: #60a5fa;
-    border-bottom: 1px solid #1e293b; background: #0b071e; letter-spacing: 1px;
+    padding: 12px; font-size: 13px; font-weight: bold; color: #38bdf8;
+    border-bottom: 1px solid #1e293b; background: #0a061c; letter-spacing: 1px;
 }
 .news-stream {
     flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
 }
 .news-card {
-    background: #090615; border-left: 4px solid #3b82f6; padding: 10px; border-radius: 4px;
-    font-size: 13px; line-height: 1.4; animation: slideIn 0.3s ease-out;
+    background: #070410; border-left: 4px solid #3b82f6; padding: 10px; border-radius: 4px;
+    font-size: 12px; line-height: 1.4; animation: slideIn 0.3s ease-out;
 }
-.news-card.urgent { border-left-color: #ef4444; background: #1a0505; }
-.news-card.success { border-left-color: #10b981; background: #051a0e; }
-.news-time { font-size: 11px; color: #64748b; margin-bottom: 4px; }
+.news-card.urgent { border-left-color: #ef4444; background: #1a0303; }
+.news-card.success { border-left-color: #10b981; background: #03140a; }
+.news-time { font-size: 10px; color: #64748b; margin-bottom: 3px; }
 
-/* 📊 右侧：资产交易大厅 */
-.trading-panel { display: flex; flex-direction: column; gap: 15px; }
+/* 📊 右侧交易大厅 */
+.trading-panel { display: flex; flex-direction: column; gap: 12px; }
 .header-stats {
-    background: linear-gradient(90deg, #0f0a28 0%, #05030f 100%);
-    border: 1px solid #334155; border-radius: 12px; padding: 15px;
-    display: flex; justify-content: space-between; align-items: center;
+    background: linear-gradient(90deg, #0b071e 0%, #030208 100%);
+    border: 1px solid #232d3f; border-radius: 12px; padding: 12px 20px;
+    display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 15px; align-items: center;
 }
-.networth-box { display: flex; flex-direction: column; }
-.networth-box .val { font-size: 32px; font-weight: bold; color: #f59e0b; font-family: monospace; }
+.stat-item { display: flex; flex-direction: column; }
+.stat-item .lbl { font-size: 11px; color: #94a3b8; font-weight: bold; text-transform: uppercase; }
+.stat-item .val { font-size: 26px; font-weight: bold; font-family: monospace; }
 
-/* 📈 资产网格 */
+/* 📈 资产配置网格 */
 .assets-grid {
     flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
 }
 .asset-row {
-    background: #020005; border: 1px solid #1e293b; border-radius: 12px;
+    background: #010003; border: 1px solid #1e293b; border-radius: 12px;
     padding: 12px; display: flex; flex-direction: column; justify-content: space-between;
-    transition: border-color 0.2s;
 }
-.asset-row:hover { border-color: #475569; }
-.asset-info { display: flex; justify-content: space-between; align-items: center; }
-.asset-name { font-size: 16px; font-weight: bold; color: #f8fafc; }
-.asset-price { font-size: 20px; font-weight: bold; font-family: monospace; }
+.asset-info { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #0f172a; padding-bottom: 6px; }
+.asset-name { font-size: 14px; font-weight: bold; color: #f8fafc; }
+.asset-price { font-size: 18px; font-weight: bold; font-family: monospace; }
 .asset-price.up { color: #10b981; }
 .asset-price.down { color: #ef4444; }
 
+/* 🎛️ 资金分配控制区 */
+.allocation-selector {
+    background: #06040d; padding: 8px; border-radius: 8px; margin: 8px 0;
+    display: flex; flex-direction: column; gap: 4px; border: 1px solid #111827;
+}
+.slider-container { display: flex; align-items: center; gap: 10px; }
+.slider-container input { flex: 1; accent-color: #38bdf8; cursor: pointer; }
+.slider-val { font-size: 12px; font-family: monospace; color: #38bdf8; width: 35px; text-align: right; }
+
 .asset-pos-info {
-    font-size: 12px; color: #94a3b8; margin: 8px 0; display: flex; justify-content: space-between;
-    background: #090615; padding: 6px; border-radius: 4px;
+    font-size: 11px; color: #94a3b8; padding: 6px; border-radius: 6px;
+    background: #06040c; display: flex; flex-direction: column; gap: 3px; border: 1px solid #0f172a;
 }
+.pos-metrics { display: flex; justify-content: space-between; font-family: monospace; }
 
-.action-buttons { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 6px; }
+.action-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }
 .btn {
-    padding: 8px 4px; font-size: 11px; font-weight: bold; border: none; border-radius: 6px;
-    cursor: pointer; text-transform: uppercase; transition: opacity 0.1s;
+    padding: 8px; font-size: 11px; font-weight: bold; border: none; border-radius: 6px;
+    cursor: pointer; text-transform: uppercase; transition: background 0.1s;
 }
-.btn:active { transform: scale(0.97); }
-.btn:disabled { opacity: 0.15; cursor: not-allowed; }
-.btn-long { background: #10b981; color: #fff; }
-.btn-short { background: #ef4444; color: #fff; }
-.btn-close { background: #3b82f6; color: #fff; }
+.btn-long { background: #065f46; color: #34d399; border: 1px solid #047857; }
+.btn-long:hover { background: #047857; }
+.btn-short { background: #991b1b; color: #fca5a5; border: 1px solid #b91c1c; }
+.btn-short:hover { background: #b91c1c; }
+.btn-close { background: #1e3a8a; color: #93c5fd; border: 1px solid #1d4ed8; }
+.btn-close:hover { background: #1d4ed8; }
+.btn:disabled { opacity: 0.15; cursor: not-allowed; border-color: transparent; }
 
-/* 全屏结算遮罩 */
+/* 遮罩 */
 .overlay {
-    position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(5,2,15,0.98);
+    position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(3,1,10,0.99);
     display: flex; flex-direction: column; justify-content: center; align-items: center;
     z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.4s;
 }
 .overlay.active { opacity: 1; pointer-events: auto; }
-.overlay h1 { font-size: 45px; margin-bottom: 15px; }
-.overlay button { background: #fff; color:#000; border:none; padding:12px 35px; font-weight:bold; border-radius:6px; cursor:pointer; }
+.overlay h1 { font-size: 40px; margin-bottom: 12px; }
+.overlay button { background: #38bdf8; color:#000; border:none; padding:12px 35px; font-weight:bold; border-radius:6px; cursor:pointer; }
 
 @keyframes slideIn { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 </style>
@@ -97,296 +108,332 @@ body {
 <body>
 
 <div class="terminal-container" id="terminal">
-    <!-- 左侧：实时宏观路透社终端 -->
+    <!-- 左侧：新闻 -->
     <div class="news-panel">
-        <div class="panel-title">📡 LIVE MACRO REUTERS (实时宏观事件)</div>
+        <div class="panel-title">📡 MACRO TERMINAL v3.0 (头寸风控版)</div>
         <div class="news-stream" id="newsStream">
             <div class="news-card">
                 <div class="news-time">09:00:00</div>
-                全球宏观对冲市场开盘。当前基准利率：4.50%。请紧盯宏观政策与地缘政治动向。
+                终端启动。请在下方交易面板中通过滑块精准调整每单动用的【可用现金比例】进行对冲。
             </div>
         </div>
     </div>
 
-    <!-- 右侧：多空对冲交易大厅 -->
+    <!-- 右侧：看板与操作 -->
     <div class="trading-panel">
         <div class="header-stats">
-            <div class="networth-box">
-                <span style="font-size:12px; color:#94a3b8; font-weight:bold;">AUM (管理总资产)</span>
-                <span class="val" id="totalNetWorth">RM 10,000,000.00</span>
+            <div class="stat-item">
+                <span class="lbl">AUM (当前净资产)</span>
+                <span class="val" id="totalNetWorth" style="color: #f59e0b;">RM 10,000,000.00</span>
             </div>
-            <div style="text-align: right; font-size: 13px; color: #64748b;">
-                目标：<span style="color:#f59e0b; font-weight:bold;">RM 50,000,000.00</span><br>
-                在瞬息万变的宏观黑天鹅中活下来并赚取5倍利润！
+            <div class="stat-item">
+                <span class="lbl">Available Cash (可用现金)</span>
+                <span class="val" id="availableCash" style="color: #38bdf8;">RM 10,000,000.00</span>
+            </div>
+            <div class="stat-item">
+                <span class="lbl">Margin Engaged (已用保证金)</span>
+                <span class="val" id="marginEngaged" style="color: #94a3b8;">RM 0.00</span>
             </div>
         </div>
 
-        <!-- 4大核心对冲资产网格 -->
-        <div class="assets-grid" id="assetsGrid">
-            <!-- 科技股 -->
-            <div class="asset-row" id="row-tech">
+        <div class="assets-grid">
+            <!-- TECH -->
+            <div class="asset-row">
                 <div class="asset-info">
                     <span class="asset-name">💻 纳指科技 (TECH)</span>
                     <span class="asset-price" id="price-tech">RM 150.00</span>
                 </div>
-                <div class="asset-pos-info" id="pos-tech">仓位: 空仓 | 浮盈: --</div>
+                
+                <!-- 资金分配比例器 -->
+                <div class="allocation-selector">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; color:#94a3b8;">
+                        <span>单笔下单使用可用现金比例:</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" id="slider-tech" min="10" max="100" step="10" value="30" oninput="updateSliderVal('tech')">
+                        <span class="slider-val" id="sliderval-tech">30%</span>
+                    </div>
+                </div>
+
+                <div class="asset-pos-info" id="pos-tech">
+                    <div class="pos-metrics"><span>方向: 空仓</span> <span>持仓数量: 0</span></div>
+                    <div class="pos-metrics"><span>均价: --</span> <span id="pnl-tech">浮盈: --</span></div>
+                </div>
                 <div class="action-buttons">
-                    <button class="btn btn-long" onclick="openPos('tech','LONG')">Long</button>
-                    <button class="btn btn-short" onclick="openPos('tech','SHORT')">Short</button>
-                    <button class="btn btn-close" onclick="closePos('tech')" disabled>Close</button>
+                    <button class="btn btn-long" onclick="executeTrade('tech','LONG')">+ Long 加多</button>
+                    <button class="btn btn-short" onclick="executeTrade('tech','SHORT')">+ Short 加空</button>
+                    <button class="btn btn-close" id="close-tech" onclick="closePosition('tech')" disabled>平仓结算</button>
                 </div>
             </div>
 
-            <!-- 原油 -->
-            <div class="asset-row" id="row-oil">
+            <!-- OIL -->
+            <div class="asset-row">
                 <div class="asset-info">
                     <span class="asset-name">🛢️ 布伦特原油 (OIL)</span>
                     <span class="asset-price" id="price-oil">RM 80.00</span>
                 </div>
-                <div class="asset-pos-info" id="pos-oil">仓位: 空仓 | 浮盈: --</div>
+                <div class="allocation-selector">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; color:#94a3b8;">
+                        <span>单笔下单使用可用现金比例:</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" id="slider-oil" min="10" max="100" step="10" value="30" oninput="updateSliderVal('oil')">
+                        <span class="slider-val" id="sliderval-oil">30%</span>
+                    </div>
+                </div>
+                <div class="asset-pos-info" id="pos-oil">
+                    <div class="pos-metrics"><span>方向: 空仓</span> <span>持仓数量: 0</span></div>
+                    <div class="pos-metrics"><span>均价: --</span> <span id="pnl-oil">浮盈: --</span></div>
+                </div>
                 <div class="action-buttons">
-                    <button class="btn btn-long" onclick="openPos('oil','LONG')">Long</button>
-                    <button class="btn btn-short" onclick="openPos('oil','SHORT')">Short</button>
-                    <button class="btn btn-close" onclick="closePos('oil')" disabled>Close</button>
+                    <button class="btn btn-long" onclick="executeTrade('oil','LONG')">+ Long 加多</button>
+                    <button class="btn btn-short" onclick="executeTrade('oil','SHORT')">+ Short 加空</button>
+                    <button class="btn btn-close" id="close-oil" onclick="closePosition('oil')" disabled>平仓结算</button>
                 </div>
             </div>
 
-            <!-- 黄金 -->
-            <div class="asset-row" id="row-gold">
+            <!-- GOLD -->
+            <div class="asset-row">
                 <div class="asset-info">
                     <span class="asset-name">👑 现货黄金 (GOLD)</span>
                     <span class="asset-price" id="price-gold">RM 200.00</span>
                 </div>
-                <div class="asset-pos-info" id="pos-gold">仓位: 空仓 | 浮盈: --</div>
+                <div class="allocation-selector">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; color:#94a3b8;">
+                        <span>单笔下单使用可用现金比例:</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" id="slider-gold" min="10" max="100" step="10" value="30" oninput="updateSliderVal('gold')">
+                        <span class="slider-val" id="sliderval-gold">30%</span>
+                    </div>
+                </div>
+                <div class="asset-pos-info" id="pos-gold">
+                    <div class="pos-metrics"><span>方向: 空仓</span> <span>持仓数量: 0</span></div>
+                    <div class="pos-metrics"><span>均价: --</span> <span id="pnl-gold">浮盈: --</span></div>
+                </div>
                 <div class="action-buttons">
-                    <button class="btn btn-long" onclick="openPos('gold','LONG')">Long</button>
-                    <button class="btn btn-short" onclick="openPos('gold','SHORT')">Short</button>
-                    <button class="btn btn-close" onclick="closePos('gold')" disabled>Close</button>
+                    <button class="btn btn-long" onclick="executeTrade('gold','LONG')">+ Long 加多</button>
+                    <button class="btn btn-short" onclick="executeTrade('gold','SHORT')">+ Short 加空</button>
+                    <button class="btn btn-close" id="close-gold" onclick="closePosition('gold')" disabled>平仓结算</button>
                 </div>
             </div>
 
-            <!-- 大马综合指数 -->
-            <div class="asset-row" id="row-index">
+            <!-- INDEX -->
+            <div class="asset-row">
                 <div class="asset-info">
                     <span class="asset-name">🏛️ 恒指/综指 (INDEX)</span>
                     <span class="asset-price" id="price-index">RM 1600.00</span>
                 </div>
-                <div class="asset-pos-info" id="pos-index">仓位: 空仓 | 浮盈: --</div>
+                <div class="allocation-selector">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; color:#94a3b8;">
+                        <span>单笔下单使用可用现金比例:</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" id="slider-index" min="10" max="100" step="10" value="30" oninput="updateSliderVal('index')">
+                        <span class="slider-val" id="sliderval-index">30%</span>
+                    </div>
+                </div>
+                <div class="asset-pos-info" id="pos-index">
+                    <div class="pos-metrics"><span>方向: 空仓</span> <span>持仓数量: 0</span></div>
+                    <div class="pos-metrics"><span>均价: --</span> <span id="pnl-index">浮盈: --</span></div>
+                </div>
                 <div class="action-buttons">
-                    <button class="btn btn-long" onclick="openPos('index','LONG')">Long</button>
-                    <button class="btn btn-short" onclick="openPos('index','SHORT')">Short</button>
-                    <button class="btn btn-close" onclick="closePos('index')" disabled>Close</button>
+                    <button class="btn btn-long" onclick="executeTrade('index','LONG')">+ Long 加多</button>
+                    <button class="btn btn-short" onclick="executeTrade('index','SHORT')">+ Short 加空</button>
+                    <button class="btn btn-close" id="close-index" onclick="closePosition('index')" disabled>平仓结算</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 结局蒙层 -->
+    <!-- 结算 -->
     <div class="overlay" id="endOverlay">
-        <h1 id="endTitle" style="color: #10b981;">🏆 达成终极对冲之王</h1>
-        <p id="endDesc">你成功从宏观资本博弈中收割了足够的利润。</p>
+        <h1 id="endTitle">🏆 达成对冲巨鳄</h1>
+        <p id="endDesc">对冲大结局描述</p>
         <button onclick="restartGame()">重新执掌基金</button>
     </div>
 </div>
 
 <script>
-// 精准 0.05 结算
 function round05(v) { return Math.round(v / 0.05) * 0.05; }
 
-// 💼 核心数据结构
-let cash = 10000000.00; 
+let cash = 10000000.00;
 let assets = {
-    tech:  { name: "科技股", price: 150.00,  pos: "NONE", size: 0, entry: 0, bias: 0, lastPrice: 150.00 },
-    oil:   { name: "原油",   price: 80.00,   pos: "NONE", size: 0, entry: 0, bias: 0, lastPrice: 80.00 },
-    gold:  { name: "黄金",   price: 200.00,  pos: "NONE", size: 0, entry: 0, bias: 0, lastPrice: 200.00 },
-    index: { name: "指数",   price: 1600.00, pos: "NONE", size: 0, entry: 0, bias: 0, lastPrice: 1600.00 }
+    tech:  { price: 150.00,  pos: "NONE", size: 0, entry: 0, bias: 0, lastPrice: 150.00 },
+    oil:   { price: 80.00,   pos: "NONE", size: 0, entry: 0, bias: 0, lastPrice: 80.00 },
+    gold:  { price: 200.00,  pos: "NONE", size: 0, entry: 0, bias: 0, lastPrice: 200.00 },
+    index: { price: 1600.00, pos: "NONE", size: 0, entry: 0, bias: 0, lastPrice: 1600.00 }
 };
 
 let gameActive = true;
-let gameTime = 0;
-
-// 📰 宏观事件库（高逻辑驱动链）
 const macroEvents = [
-    { text: "🚨 突发：中东核心产油国宣布全面提高出口关税，地缘政治冲突升级！", effect: { oil: 2.5, gold: 1.5, tech: -1.0, index: -0.8 }, type: "urgent", duration: 25 },
-    { text: "🏛️ 联储重磅：最新通胀数据超预期爆表，美联储表态不排除连续加息50Bps！", effect: { tech: -3.0, index: -1.5, gold: -1.0, oil: -0.5 }, type: "urgent", duration: 30 },
-    { text: "📉 宏观利好：全球半导体供应链瓶颈全面消融，芯片巨头全面调高出货预期！", effect: { tech: 2.8, index: 1.2, oil: 0.5, gold: -0.8 }, type: "success", duration: 25 },
-    { text: "💣 突发黑天鹅：海外某万亿级巨头对冲基金突发爆仓，触发全球流动性踩踏挤兑！", effect: { index: -3.5, tech: -3.0, gold: 2.5, oil: -2.0 }, type: "urgent", duration: 35 },
-    { text: "🕊️ 停火曙光：多方签署中东地缘和平框架备忘录，市场避险情绪全面降温。", effect: { oil: -3.0, gold: -2.5, tech: 1.5, index: 1.0 }, type: "success", duration: 25 },
-    { text: "📊 经济数据：最新非农就业人数远不及预期，引发市场强烈“衰退与降息”双重预期！", effect: { gold: 2.0, tech: 1.8, index: 0.8, oil: -1.5 }, type: "success", duration: 30 }
+    { text: "🚨 突发：中东核心产油国宣布全面提高出口关税，地缘政治冲突升级！", effect: { oil: 2.5, gold: 1.5, tech: -1.0, index: -0.8 }, type: "urgent" },
+    { text: "🏛️ 联储重磅：最新通胀数据超预期爆表，美联储表态不排除连续加息50Bps！", effect: { tech: -3.0, index: -1.5, gold: -1.0, oil: -0.5 }, type: "urgent" },
+    { text: "📉 宏观利好：全球半导体供应链瓶颈全面消融，芯片巨头全面调高出货预期！", effect: { tech: 2.8, index: 1.2, oil: 0.5, gold: -0.8 }, type: "success" },
+    { text: "💣 突发黑天鹅：海外某万亿级巨头对冲基金突发爆仓，触发全球流动性踩踏挤兑！", effect: { index: -3.5, tech: -3.0, gold: 2.5, oil: -2.0 }, type: "urgent" },
+    { text: "🕊️ 停火曙光：多方签署中东地缘和平框架备忘录，市场避险情绪全面降温。", effect: { oil: -3.0, gold: -2.5, tech: 1.5, index: 1.0 }, type: "success" }
 ];
 
-// 🔄 启动定时器
 document.addEventListener("DOMContentLoaded", () => {
-    setInterval(tickGame, 300); // 300毫秒步进
-    setInterval(triggerNews, 9000); // 每9秒强行切入一则重大宏观新闻
+    setInterval(tickGame, 300);
+    setInterval(triggerNews, 8000);
 });
 
-// 🏭 价格与逻辑演变引擎
-function tickGame() {
-    if (!gameActive) return;
-    gameTime++;
-
-    let totalAssetValue = cash;
-
-    for (let key in assets) {
-        let ast = assets[key];
-        
-        // 市场常规内生波动 + 事件偏向因子(bias)
-        let noise = (Math.random() - 0.5) * (ast.price * 0.012);
-        let trend = ast.bias * (ast.price * 0.006);
-        
-        ast.lastPrice = ast.price;
-        ast.price = round05(ast.price + noise + trend);
-        if(ast.price < 1.00) ast.price = 1.00;
-
-        // 逐步衰减新闻事件的长尾效应
-        if (ast.bias !== 0) {
-            ast.bias *= 0.95; 
-            if (Math.abs(ast.bias) < 0.05) ast.bias = 0;
-        }
-
-        // 计算当前资产包浮动盈亏
-        let fPnl = 0;
-        if (ast.pos === 'LONG') {
-            fPnl = (ast.price - ast.entry) * ast.size;
-            totalAssetValue += (ast.entry * ast.size) + fPnl;
-        } else if (ast.pos === 'SHORT') {
-            fPnl = (ast.entry - ast.price) * ast.size;
-            totalAssetValue += (ast.entry * ast.size) + fPnl;
-        }
-
-        // 刷新单只资产的 UI 面板
-        updateAssetUI(key, fPnl);
-    }
-
-    // 规范总资产显示
-    totalAssetValue = round05(totalAssetValue);
-    document.getElementById("totalNetWorth").innerText = "RM " + totalAssetValue.toFixed(2);
-
-    // 💥 破产判定
-    if (totalAssetValue <= 100000) {
-        endGame(false, "💥 仓位对冲失败！基金遭遇史诗级穿仓，管理资产蒸发殆尽，被清盘出局！");
-    }
-    // 🏆 通关判定
-    if (totalAssetValue >= 50000000.00) {
-        endGame(true, "🏆 宏观巨鳄通关！你成功在多场黑天鹅风暴中完美对冲，狂赚5倍资产，晋升全球对冲之王！");
-    }
+function updateSliderVal(key) {
+    let val = document.getElementById(`slider-${key}`).value;
+    document.getElementById(`sliderval-${key}`).innerText = val + "%";
 }
 
-// 📰 注入突发新闻并重组宏观趋势
-function triggerNews() {
-    if (!gameActive) return;
-    let evt = macroEvents[Math.floor(Math.random() * macroEvents.length)];
-    
-    // 改变宏观资产偏向因子
-    for (let key in evt.effect) {
-        assets[key].bias = evt.effect[key];
-    }
+// 🛒 核心交易执行器（支持分批动态建仓/加仓）
+function executeTrade(key, direction) {
+    if (!gameActive || cash <= 100) return;
 
-    // 渲染新闻到左侧流
-    const stream = document.getElementById("newsStream");
-    let now = new Date();
-    let timeStr = now.toTimeString().split(' ')[0];
-
-    let card = document.createElement("div");
-    card.className = `news-card ${evt.type === 'urgent' ? 'urgent' : 'success'}`;
-    card.innerHTML = `<div class="news-time">${timeStr}</div><div>${evt.text}</div>`;
-    
-    stream.insertBefore(card, stream.firstChild);
-}
-
-function updateAssetUI(key, fPnl) {
     let ast = assets[key];
-    let priceEl = document.getElementById(`price-${key}`);
-    priceEl.innerText = "RM " + ast.price.toFixed(2);
     
-    // 涨跌红绿
-    if(ast.price >= ast.lastPrice) {
-        priceEl.className = "asset-price up";
-    } else {
-        priceEl.className = "asset-price down";
+    // 如果方向相反，提示必须先平仓（不允许锁仓单，必须是净头寸）
+    if (ast.pos !== "NONE" && ast.pos !== direction) {
+        alert("存在反向持仓！请先‘平仓结算’后再反向建仓。");
+        return;
     }
 
-    // 仓位信息刷新
-    let posEl = document.getElementById(`pos-${key}`);
-    if (ast.pos !== 'NONE') {
-        let pnlPct = (fPnl / (ast.entry * ast.size)) * 100;
-        posEl.innerHTML = `仓位: <span style="color:${ast.pos==='LONG'?'#10b981':'#ef4444'}">${ast.pos}</span> | 浮盈: <span style="color:${fPnl>=0?'#10b981':'#ef4444'}">${fPnl>=0?'+':''}${fPnl.toFixed(2)} (${pnlPct.toFixed(2)}%)</span>`;
+    // 计算获取当前滑块设定的资金分配金额
+    let pct = parseInt(document.getElementById(`slider-${key}`).value) / 100;
+    let allocatedCapital = cash * pct;
+    
+    if (allocatedCapital < ast.price) return;
+
+    let newSize = Math.floor(allocatedCapital / ast.price);
+    let tradeCost = round05(newSize * ast.price);
+
+    // 重新加权计算平均开仓均价（加仓逻辑）
+    if (ast.pos === "NONE") {
+        ast.pos = direction;
+        ast.entry = ast.price;
+        ast.size = newSize;
     } else {
-        posEl.innerHTML = `仓位: 空仓 | 浮盈: --`;
+        // 经典均价公式: (旧数量*旧均价 + 新数量*新市价) / 总数量
+        let totalCost = (ast.size * ast.entry) + (newSize * ast.price);
+        ast.size += newSize;
+        ast.entry = totalCost / ast.size;
     }
+
+    cash = round05(cash - tradeCost);
+    document.getElementById(`close-${key}`).disabled = false;
 }
 
-// 🟢 开仓逻辑 (多/空)
-function openPos(key, type) {
-    if (!gameActive || assets[key].pos !== 'NONE') return;
-    
-    let ast = assets[key];
-    ast.pos = type;
-    ast.entry = ast.price;
-    
-    // 每次开仓雷打不动动用当前总现金的 80% 全力搏杀单品种
-    let allocation = cash * 0.8;
-    ast.size = Math.floor(allocation / ast.price);
-    cash = round05(cash - (ast.size * ast.price));
-
-    // 控制按钮状态
-    let row = document.getElementById(`row-${key}`);
-    row.querySelectorAll('.btn-long, .btn-short').forEach(b => b.disabled = true);
-    row.querySelector('.btn-close').disabled = false;
-}
-
-// 🔵 平仓逻辑
-function closePos(key) {
-    if (!gameActive || assets[key].pos === 'NONE') return;
+// 🔵 平仓结算
+function closePosition(key) {
+    if (!gameActive || assets[key].pos === "NONE") return;
 
     let ast = assets[key];
     let fPnl = 0;
-    
+
     if (ast.pos === 'LONG') {
         fPnl = (ast.price - ast.entry) * ast.size;
     } else if (ast.pos === 'SHORT') {
         fPnl = (ast.entry - ast.price) * ast.size;
     }
 
-    // 回笼本金加浮动盈亏
+    // 回笼全部占用本金 + 盈亏
     cash = round05(cash + (ast.entry * ast.size) + fPnl);
-    
-    // 清空状态机
-    ast.pos = 'NONE';
-    ast.size = 0;
-    ast.entry = 0;
 
-    let row = document.getElementById(`row-${key}`);
-    row.querySelectorAll('.btn-long, .btn-short').forEach(b => b.disabled = false);
-    row.querySelector('.btn-close').disabled = true;
+    // 清空
+    ast.pos = "NONE"; ast.size = 0; ast.entry = 0;
+    document.getElementById(`close-${key}`).disabled = true;
+}
+
+function tickGame() {
+    if (!gameActive) return;
+
+    let totalMarginEngaged = 0;
+    let totalFloatingPnl = 0;
+
+    for (let key in assets) {
+        let ast = assets[key];
+        
+        let noise = (Math.random() - 0.5) * (ast.price * 0.013);
+        let trend = ast.bias * (ast.price * 0.007);
+        
+        ast.lastPrice = ast.price;
+        ast.price = round05(ast.price + noise + trend);
+        if (ast.price < 1.00) ast.price = 1.00;
+
+        if (ast.bias !== 0) {
+            ast.bias *= 0.94;
+            if (Math.abs(ast.bias) < 0.04) ast.bias = 0;
+        }
+
+        // 计算占用本金和浮动盈亏
+        let fPnl = 0;
+        if (ast.pos !== "NONE") {
+            totalMarginEngaged += (ast.entry * ast.size);
+            if (ast.pos === 'LONG') fPnl = (ast.price - ast.entry) * ast.size;
+            else if (ast.pos === 'SHORT') fPnl = (ast.entry - ast.price) * ast.size;
+            totalFloatingPnl += fPnl;
+        }
+
+        updateAssetUI(key, fPnl);
+    }
+
+    let netWorth = round05(cash + totalMarginEngaged + totalFloatingPnl);
+
+    // 看板数值更新
+    document.getElementById("totalNetWorth").innerText = "RM " + netWorth.toFixed(2);
+    document.getElementById("availableCash").innerText = "RM " + cash.toFixed(2);
+    document.getElementById("marginEngaged").innerText = "RM " + totalMarginEngaged.toFixed(2);
+
+    if (netWorth <= 150000.00) endGame(false, "💥 头寸彻底失控！未预留足够的安全现金应对黑天鹅，基金遭遇爆仓清算。");
+    if (netWorth >= 60000000.00) endGame(true, "🏆 顶级宏观巨鳄！通过精准的资金仓位分配和动态对冲，成功将资产推向巅峰！");
+}
+
+function updateAssetUI(key, fPnl) {
+    let ast = assets[key];
+    let prEl = document.getElementById(`price-${key}`);
+    prEl.innerText = "RM " + ast.price.toFixed(2);
+    prEl.className = `asset-price ${ast.price >= ast.lastPrice ? 'up' : 'down'}`;
+
+    let infoEl = document.getElementById(`pos-${key}`);
+    if (ast.pos !== "NONE") {
+        let pnlPct = (fPnl / (ast.entry * ast.size)) * 100;
+        infoEl.innerHTML = `
+            <div class="pos-metrics"><span style="color:${ast.pos==='LONG'?'#10b981':'#ef4444'}">方向: ${ast.pos}</span> <span>持仓数量: ${ast.size}</span></div>
+            <div class="pos-metrics"><span>均价: RM ${ast.entry.toFixed(2)}</span> <span style="color:${fPnl>=0?'#10b981':'#ef4444'}">浮盈: ${fPnl>=0?'+':''}${fPnl.toFixed(2)} (${pnlPct.toFixed(2)}%)</span></div>
+        `;
+    } else {
+        infoEl.innerHTML = `
+            <div class="pos-metrics"><span>方向: 空仓</span> <span>持仓数量: 0</span></div>
+            <div class="pos-metrics"><span>均价: --</span> <span>浮盈: --</span></div>
+        `;
+    }
+}
+
+function triggerNews() {
+    if (!gameActive) return;
+    let evt = macroEvents[Math.floor(Math.random() * macroEvents.length)];
+    for (let key in evt.effect) { assets[key].bias = evt.effect[key]; }
+
+    const stream = document.getElementById("newsStream");
+    let card = document.createElement("div");
+    card.className = `news-card ${evt.type === 'urgent' ? 'urgent' : 'success'}`;
+    card.innerHTML = `<div class="news-time">${new Date().toTimeString().split(' ')[0]}</div><div>${evt.text}</div>`;
+    stream.insertBefore(card, stream.firstChild);
 }
 
 function endGame(isWin, text) {
     gameActive = false;
-    let overlay = document.getElementById("endOverlay");
-    let title = document.getElementById("endTitle");
-    let desc = document.getElementById("endDesc");
-
-    title.innerText = isWin ? "🏆 达成对冲巨鳄" : "💥 宣告破产重组";
-    title.style.color = isWin ? "#10b981" : "#ef4444";
-    desc.innerText = text;
-    overlay.classList.add("active");
+    document.getElementById("endOverlay").classList.add("active");
+    document.getElementById("endTitle").innerText = isWin ? "🏆 荣登华尔街之巅" : "💥 破产重组公告";
+    document.getElementById("endTitle").style.color = isWin ? "#10b981" : "#ef4444";
+    document.getElementById("endDesc").innerText = text;
 }
 
 function restartGame() {
     cash = 10000000.00;
-    for(let key in assets) {
-        assets[key].pos = "NONE";
-        assets[key].size = 0;
-        assets[key].entry = 0;
-        assets[key].bias = 0;
-        let row = document.getElementById(`row-${key}`);
-        row.querySelectorAll('.btn-long, .btn-short').forEach(b => b.disabled = false);
-        row.querySelector('.btn-close').disabled = true;
+    for (let key in assets) {
+        assets[key].pos = "NONE"; assets[key].size = 0; assets[key].entry = 0; assets[key].bias = 0;
+        document.getElementById(`close-${key}`).disabled = true;
     }
     document.getElementById("endOverlay").classList.remove("active");
-    document.getElementById("newsStream").innerHTML = `<div class="news-card"><div class="news-time">09:00:00</div>基金清算重组完成，重新执掌 1000 万宏观头寸。</div>`;
     gameActive = true;
 }
 </script>
